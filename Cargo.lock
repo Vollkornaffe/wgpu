@@ -1309,6 +1309,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "float-cmp"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "98de4bbd547a563b716d8dfa9aad1cb19bfab00f4fa09a6a4ed21dbcf44ce9c4"
+dependencies = [
+ "num-traits",
+]
+
+[[package]]
 name = "flume"
 version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2008,7 +2017,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0c2a198fb6b0eada2a8df47933734e6d35d350665a33a3593d7164fa52c75c19"
 dependencies = [
  "cfg-if",
- "windows-targets 0.48.5",
+ "windows-targets 0.52.5",
 ]
 
 [[package]]
@@ -2977,6 +2986,21 @@ name = "regex-syntax"
 version = "0.8.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "adad44e29e4c806119491a7f06f03de4d1af22c3a680dd47f1e6e179439d1f56"
+
+[[package]]
+name = "renderdoc"
+version = "0.12.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ac633a08f39bf3268714799bd8c4a1a19c19c203d817d3448bb8b91c97817cf0"
+dependencies = [
+ "bitflags 2.5.0",
+ "float-cmp",
+ "libloading 0.8.3",
+ "once_cell",
+ "renderdoc-sys",
+ "winapi",
+ "wio",
+]
 
 [[package]]
 name = "renderdoc-sys"
@@ -4284,6 +4308,7 @@ dependencies = [
  "obj",
  "png",
  "pollster",
+ "renderdoc",
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "wasm-bindgen-test",
