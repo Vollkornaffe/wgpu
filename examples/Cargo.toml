@@ -37,6 +37,7 @@ noise.workspace = true
 obj.workspace = true
 png.workspace = true
 pollster.workspace = true
+renderdoc = "0.12.1"
 web-time.workspace = true
 wgpu.workspace = true
 winit.workspace = true

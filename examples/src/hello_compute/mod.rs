@@ -1,5 +1,6 @@
-use std::{borrow::Cow, str::FromStr};
-use wgpu::util::DeviceExt;
+use renderdoc::{CaptureOption, RenderDoc, V141};
+use std::{borrow::Cow, str::FromStr, thread::sleep, time::Duration};
+use wgpu::{util::DeviceExt, InstanceDescriptor, InstanceFlags};
 
 // Indicates a u32 overflow in an intermediate Collatz value
 const OVERFLOW: u32 = 0xffffffff;
@@ -35,7 +36,10 @@ async fn run() {
 #[cfg_attr(test, allow(dead_code))]
 async fn execute_gpu(numbers: &[u32]) -> Option<Vec<u32>> {
     // Instantiates instance of WebGPU
-    let instance = wgpu::Instance::default();
+    let instance = wgpu::Instance::new(InstanceDescriptor {
+        flags: InstanceFlags::debugging(),
+        ..Default::default()
+    });
 
     // `request_adapter` instantiates the general connection to the GPU
     let adapter = instance
@@ -56,7 +60,15 @@ async fn execute_gpu(numbers: &[u32]) -> Option<Vec<u32>> {
         .await
         .unwrap();
 
-    execute_gpu_inner(&device, &queue, numbers).await
+    let mut rd: RenderDoc<V141> = RenderDoc::new().unwrap();
+    rd.start_frame_capture(std::ptr::null(), std::ptr::null());
+    rd.set_capture_option_u32(CaptureOption::RefAllResources, 1);
+
+    let result = execute_gpu_inner(&device, &queue, numbers).await;
+
+    rd.end_frame_capture(std::ptr::null(), std::ptr::null());
+
+    result
 }
 
 async fn execute_gpu_inner(
