@@ -494,7 +494,8 @@ impl ComputePipeline {
     }
 
     pub fn get_sub_group_size(self: &Arc<Self>) -> Option<usize> {
-        self.raw().map_or(None, get_sub_group_size)
+        self.raw()
+            .map_or(None, hal::DynComputePipeline::get_sub_group_size)
     }
 }
 
