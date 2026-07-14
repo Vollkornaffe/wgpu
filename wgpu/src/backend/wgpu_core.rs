@@ -2459,6 +2459,10 @@ impl dispatch::ComputePipelineInterface for CoreComputePipeline {
         }
         .into()
     }
+
+    fn get_sub_group_size(&self) -> Option<usize> {
+        self.context.0.compute_pipeline_get_sub_group_size(self.id)
+    }
 }
 
 impl Drop for CoreComputePipeline {

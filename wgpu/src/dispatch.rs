@@ -310,6 +310,9 @@ pub trait RenderPipelineInterface: CommonTraits {
 }
 pub trait ComputePipelineInterface: CommonTraits {
     fn get_bind_group_layout(&self, index: u32) -> DispatchBindGroupLayout;
+    fn get_sub_group_size(&self) -> Option<usize> {
+        None
+    }
 }
 pub trait PipelineCacheInterface: CommonTraits {
     fn get_data(&self) -> Option<Vec<u8>>;

@@ -492,6 +492,10 @@ impl ComputePipeline {
         };
         (bgl, error)
     }
+
+    pub fn get_sub_group_size(self: &Arc<Self>) -> Option<usize> {
+        self.raw().map_or(None, get_sub_group_size)
+    }
 }
 
 #[derive(Clone, Debug, Error)]

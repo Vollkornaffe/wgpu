@@ -1025,6 +1025,21 @@ impl Global {
         (id, error)
     }
 
+    pub fn compute_pipeline_get_sub_group_size(
+        &self,
+        pipeline_id: id::ComputePipelineId,
+    ) -> Option<usize> {
+        let hub = &self.hub;
+
+        let pipeline = hub.compute_pipelines.get(pipeline_id);
+
+        if let Ok(raw) = pipeline.raw() {
+            raw.get_sub_group_size()
+        } else {
+            None
+        }
+    }
+
     pub fn compute_pipeline_drop(&self, compute_pipeline_id: id::ComputePipelineId) {
         let hub = &self.hub;
 
