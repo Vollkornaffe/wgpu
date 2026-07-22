@@ -49,6 +49,11 @@ fn main() {
         pollster::block_on(instance.request_adapter(&wgpu::RequestAdapterOptions::default()))
             .expect("Failed to create adapter");
 
+    let adapter = pollster::block_on(instance.enumerate_adapters(wgpu::Backends::PRIMARY))
+        .into_iter()
+        .find(|adapter| adapter.get_info().name.contains("AMD"))
+        .unwrap();
+
     // Print out some basic information about the adapter.
     println!("Running on Adapter: {:#?}", adapter.get_info());
 
@@ -68,9 +73,11 @@ fn main() {
     // The `Queue` is a queue used to submit work for the GPU to process.
     let (device, queue) = pollster::block_on(adapter.request_device(&wgpu::DeviceDescriptor {
         label: None,
-        required_features: wgpu::Features::empty(),
+        required_features: wgpu::Features::empty()
+            | wgpu::Features::PASSTHROUGH_SHADERS
+            | wgpu::Features::SUBGROUP_SIZE_CONTROL,
         required_limits: wgpu::Limits::downlevel_defaults(),
-        experimental_features: wgpu::ExperimentalFeatures::disabled(),
+        experimental_features: unsafe { wgpu::ExperimentalFeatures::enabled() },
         memory_hints: wgpu::MemoryHints::MemoryUsage,
         trace: wgpu::Trace::Off,
     }))
@@ -80,7 +87,40 @@ fn main() {
     //
     // `include_wgsl` is a macro provided by wgpu like `include_str` which constructs a ShaderModuleDescriptor.
     // If you want to load shaders differently, you can construct the ShaderModuleDescriptor manually.
-    let module = device.create_shader_module(wgpu::include_wgsl!("shader.wgsl"));
+    //let module = device.create_shader_module(wgpu::include_wgsl!("shader.wgsl"));
+
+    let source = include_str!("shader.wgsl");
+    let module = wgpu::naga::front::wgsl::parse_str(source).unwrap();
+
+    let mut validator = wgpu::naga::valid::Validator::new(
+        wgpu::naga::valid::ValidationFlags::all(),
+        wgpu::naga::valid::Capabilities::empty(),
+    );
+    let info = validator.validate(&module).unwrap();
+
+    let pipeline_options = wgpu::naga::back::spv::PipelineOptions {
+        entry_point: "doubleMe".to_string(),
+        shader_stage: wgpu::naga::ShaderStage::Compute,
+    };
+    let options = wgpu::naga::back::spv::Options::default();
+    let spv_words =
+        wgpu::naga::back::spv::write_vec(&module, &info, &options, Some(&pipeline_options))
+            .unwrap();
+    let spirv = Some(spv_words.as_slice().into());
+
+    let module = unsafe {
+        device.create_shader_module_passthrough(wgpu::ShaderModuleDescriptorPassthrough {
+            label: Some("test"),
+            entry_points: (&[wgpu::PassthroughShaderEntryPoint {
+                name: "doubleMe".into(),
+                workgroup_size: (64, 1, 1),
+                subgroup_size: wgpu::SubgroupSize::Fixed(32),
+            }])
+                .into(),
+            spirv,
+            ..Default::default()
+        })
+    };
 
     // Create a buffer with the data we want to process on the GPU.
     //
