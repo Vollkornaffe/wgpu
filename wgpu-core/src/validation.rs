@@ -1397,7 +1397,7 @@ impl Interface {
         entry_point_name: &str,
     ) -> Option<[u32; 3]> {
         self.entry_points
-            .get(&(stage, entry_point_name.to_string()))
+            .get(&EntryPointKey(stage, entry_point_name.to_string()))
             .map(|ep| ep.workgroup_size)
     }
 

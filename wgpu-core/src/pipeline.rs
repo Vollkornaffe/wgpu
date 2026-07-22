@@ -129,7 +129,10 @@ impl ShaderModule {
     /// shader-module creation time. For non-passthrough modules and unknown
     /// entry-point names, defaults to [`wgt::SubgroupSize::Varying`].
     pub(crate) fn entry_point_subgroup_size(&self, entry_point: &str) -> wgt::SubgroupSize {
-        match self.interface {
+        let ResourceState::Valid(state) = &self.state else {
+            return wgt::SubgroupSize::Varying;
+        };
+        match state.interface {
             ShaderMetaData::Passthrough(ref interface) => interface
                 .entry_point(entry_point)
                 .map_or(wgt::SubgroupSize::Varying, |e| e.subgroup_size),
